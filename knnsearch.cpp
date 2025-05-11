@@ -6,6 +6,7 @@
 #include <ctime>       
 #include <cblas.h>     
 #include <queue>
+#include <chrono>
 
 struct DistanceIndex {
     float distance;
@@ -96,12 +97,11 @@ void knnsearch(const float* C, const float* Q, int n_C, int n_Q, int d, int k, i
 
 int main() {
     // Παράμετροι
-    const int n_C = 10000; 
-    const int n_Q = 10000;   
+    const int n_C = 100000; 
+    const int n_Q = 100000;   
     const int d = 20;      
-    const int k = 3;      
+    const int k = 5;      
 
-    // Δημιουργία τυχαίων σημείων
     std::vector<float> C(n_C * d);
     std::vector<float> Q(n_Q * d);
 
@@ -117,19 +117,17 @@ int main() {
     std::vector<int> indices(n_Q * k);
     std::vector<float> distances(n_Q * k);
 
+    // Start time measurement
+    auto start = std::chrono::high_resolution_clock::now();
 
     knnsearch(C.data(), Q.data(), n_C, n_Q, d, k, indices.data(), distances.data());
+    // End time measurement
+    auto end = std::chrono::high_resolution_clock::now();
 
-    // Results here
-    for (int q = 0; q < n_Q; ++q) {
-        std::cout << "Query " << q << ":\n";
-        for (int i = 0; i < k; ++i) {
-            std::cout << "  Neighbor " << i
-                      << " -> Index: " << indices[q * k + i]
-                      << ", Distance: " << distances[q * k + i]
-                      << "\n";
-        }
-    }
+    // Calculate the elapsed time
+    std::chrono::duration<float> duration = end - start;
+    std::cout << "Vanilla knnsearch (no threads) execution time: " 
+            << duration.count() << " seconds." << std::endl;
 
     return 0;
 }
